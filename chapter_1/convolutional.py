@@ -58,9 +58,12 @@ if __name__ == '__main__':
     b_fc2 = bias_variable([10])
     y_conv = tf.matmul(h_fc1_drop, W_fc2) + b_fc2
 
+    # todo 这个调节参数能力强
     # 我们不采用先Softmax再计算交叉熵的方法，而是直接用tf.nn.softmax_cross_entropy_with_logits直接计算
     cross_entropy = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_conv))
+    # 自定义交叉熵
+    # cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.nn.softmax(y_conv)))
     # 同样定义train_step
     train_step = tf.train.AdamOptimizer(1e-4).minimize(cross_entropy)
 

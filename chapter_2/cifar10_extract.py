@@ -1,6 +1,6 @@
 #coding: utf-8
 # 导入当前目录的cifar10_input，这个模块负责读入cifar10数据
-import cifar10_input
+from chapter_2 import cifar10_input
 # 导入TensorFlow和其他一些可能用到的模块。
 import tensorflow as tf
 import os
@@ -11,7 +11,7 @@ def inputs_origin(data_dir):
   # filenames一共5个，从data_batch_1.bin到data_batch_5.bin
   # 读入的都是训练图像
   filenames = [os.path.join(data_dir, 'data_batch_%d.bin' % i)
-               for i in xrange(1, 6)]
+               for i in range(1, 6)]
   # 判断文件是否存在
   for f in filenames:
     if not tf.gfile.Exists(f):

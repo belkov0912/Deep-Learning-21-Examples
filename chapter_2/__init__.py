@@ -18,5 +18,5 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import cifar10
-import cifar10_input
+from chapter_2 import cifar10
+from chapter_2 import cifar10_input

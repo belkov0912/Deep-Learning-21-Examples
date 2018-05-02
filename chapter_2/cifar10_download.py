@@ -1,6 +1,6 @@
 # coding:utf-8
 # 引入当前目录中的已经编写好的cifar10模块
-import cifar10
+from chapter_2 import cifar10
 # 引入tensorflow
 import tensorflow as tf
 

@@ -29,8 +29,19 @@ y_ = tf.placeholder(tf.float32, [None, 10])
 # 根据y, y_构造交叉熵损失
 cross_entropy = tf.reduce_mean(-tf.reduce_sum(y_ * tf.log(y)))
 
+# todo:没有上面那个效果好。。。
+# 我们不采用先Softmax再计算交叉熵的方法，而是直接用tf.nn.softmax_cross_entropy_with_logits直接计算
+# y_nn = tf.matmul(x, W) + b
+# cross_entropy = tf.reduce_mean(
+#     tf.nn.softmax_cross_entropy_with_logits(labels=y_, logits=y_nn))
+
 # 有了损失，我们就可以用随机梯度下降针对模型的参数（W和b）进行优化
 train_step = tf.train.GradientDescentOptimizer(0.01).minimize(cross_entropy)
+
+# 正确的预测结果
+correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
+# 计算预测准确率，它们都是Tensor
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 
 # 创建一个Session。只有在Session中才能运行优化步骤train_step。
 sess = tf.InteractiveSession()
@@ -39,18 +50,18 @@ tf.global_variables_initializer().run()
 print('start training...')
 
 # 进行1000步梯度下降
-for _ in range(1000):
+for i in range(1000):
     # 在mnist.train中取100个训练数据
     # batch_xs是形状为(100, 784)的图像数据，batch_ys是形如(100, 10)的实际标签
     # batch_xs, batch_ys对应着两个占位符x和y_
     batch_xs, batch_ys = mnist.train.next_batch(100)
     # 在Session中运行train_step，运行时要传入占位符的值
+    if i % 100 == 0:
+        train_accuracy = accuracy.eval(feed_dict={
+            x: batch_xs, y_: batch_ys})
+        print("step %d, training accuracy %g" % (i, train_accuracy))
     sess.run(train_step, feed_dict={x: batch_xs, y_: batch_ys})
 
-# 正确的预测结果
-correct_prediction = tf.equal(tf.argmax(y, 1), tf.argmax(y_, 1))
-# 计算预测准确率，它们都是Tensor
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 # 在Session中运行Tensor可以得到Tensor的值
 # 这里是获取最终模型的正确率
 print(sess.run(accuracy, feed_dict={x: mnist.test.images, y_: mnist.test.labels}))  # 0.9185
