@@ -13,6 +13,7 @@ flags = tf.app.flags
 
 # Deep q Network
 flags.DEFINE_boolean('use_gpu', True, 'Whether to use gpu or not. gpu use NHWC and gpu use NCHW for data_format')
+flags.DEFINE_string('data_format', 'NHWC', 'gpu use NHWC and gpu use NCHW for data_format')
 flags.DEFINE_string('agent_type', 'DQN', 'The type of agent [DQN]')
 flags.DEFINE_boolean('double_q', False, 'Whether to use double Q-learning')
 flags.DEFINE_string('network_header_type', 'nips', 'The type of network header [mlp, nature, nips]')
@@ -105,9 +106,9 @@ def main(_):
   else:
     conf.data_format = 'NHWC'
 
-  model_dir = get_model_dir(conf,
-      ['use_gpu', 'max_random_start', 'n_worker', 'is_train', 'memory_size', 'gpu_fraction',
-       't_save', 't_train', 'display', 'log_level', 'random_seed', 'tag', 'scale'])
+  model_dir = get_model_dir(conf, [])
+      # ['use_gpu', 'max_random_start', 'n_worker', 'is_train', 'memory_size', 'gpu_fraction',
+      #  't_save', 't_train', 'display', 'log_level', 'random_seed', 'tag', 'scale'])
 
   # start
   gpu_options = tf.GPUOptions(

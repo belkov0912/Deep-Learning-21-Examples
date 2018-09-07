@@ -33,6 +33,11 @@ tvars = tf.trainable_variables()
 input_y = tf.placeholder(tf.float32, [None, 1], name="input_y")
 advantages = tf.placeholder(tf.float32, name="reward_signal")
 
+
+## w = w - wd*loss.grad(w)
+## 1. newsGrads： loss.grad(w)
+## 2. updateGrads: w = w - wd*newGrads
+
 # 定义loss函数
 loglik = tf.log(input_y * (input_y - probability) + (1 - input_y) * (input_y + probability))
 loss = -tf.reduce_mean(loglik * advantages)

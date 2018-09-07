@@ -43,7 +43,7 @@ import tarfile
 from six.moves import urllib
 import tensorflow as tf
 
-from chapter_2 import *
+import cifar10_input
 
 FLAGS = tf.app.flags.FLAGS
 
@@ -54,6 +54,8 @@ tf.app.flags.DEFINE_string('data_dir', '/tmp/cifar10_data',
                            """Path to the CIFAR-10 data directory.""")
 tf.app.flags.DEFINE_boolean('use_fp16', False,
                             """Train the model using fp16.""")
+tf.app.flags.DEFINE_boolean('use_raw_img', True,
+                            """Train the model using raw img""")
 
 # Global constants describing the CIFAR-10 data set.
 IMAGE_SIZE = cifar10_input.IMAGE_SIZE
@@ -151,9 +153,11 @@ def distorted_inputs():
   """
   if not FLAGS.data_dir:
     raise ValueError('Please supply a data_dir')
-  data_dir = os.path.join(FLAGS.data_dir, 'cifar-10-batches-bin')
+  default_data_dir = 'cifar-10-raw-pic' if FLAGS.use_raw_img else 'cifar-10-batches-bin'
+  data_dir = os.path.join(FLAGS.data_dir, default_data_dir)
   images, labels = cifar10_input.distorted_inputs(data_dir=data_dir,
-                                                  batch_size=FLAGS.batch_size)
+                                                  batch_size=FLAGS.batch_size,
+                                                  use_raw_img=FLAGS.use_raw_img)
   if FLAGS.use_fp16:
     images = tf.cast(images, tf.float16)
     labels = tf.cast(labels, tf.float16)

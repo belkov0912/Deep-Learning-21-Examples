@@ -9,7 +9,9 @@ from logging import getLogger
 from .history import History
 from .experience import Experience
 
+import logging
 logger = getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 def get_time():
   return time.strftime("%Y-%m-%d_%H:%M:%S", time.gmtime())
@@ -71,6 +73,8 @@ class Agent(object):
       self.history.add(observation)
 
     for self.t in tqdm(range(start_t, t_max), ncols=70, initial=start_t):
+    #     pass
+    # for self.t in range(start_t, t_max):
       ep = (self.ep_end +
           max(0., (self.ep_start - self.ep_end)
             * (self.t_ep_end - max(0., self.t - self.t_learn_start)) / self.t_ep_end))
@@ -82,8 +86,12 @@ class Agent(object):
       # 3. observe
       q, loss, is_update = self.observe(observation, reward, action, terminal)
 
-      logger.debug("a: %d, r: %d, t: %d, q: %.4f, l: %.2f" % \
-          (action, reward, terminal, np.mean(q), loss))
+
+      if self.t % 10000 == 0:
+        logger.debug("a: %d, r: %d, t: %d, q: %.4f, l: %.2f" % \
+                      (action, reward, terminal, np.mean(q), loss))
+
+        print("---current:{}/{}--{}%".format(self.t, t_max, int(self.t*100.0/t_max)))
 
       if self.stat:
         self.stat.on_step(self.t, action, reward, terminal,
@@ -103,7 +111,7 @@ class Agent(object):
 
     best_reward, best_idx, best_count = 0, 0, 0
     try:
-      itr = xrange(n_episode)
+      itr = range(n_episode)
     except NameError:
       itr = range(n_episode)
     for idx in itr:
@@ -113,7 +121,8 @@ class Agent(object):
       for _ in range(self.history_length):
         self.history.add(observation)
 
-      for self.t in tqdm(range(n_step), ncols=70):
+      # for self.t in tqdm(range(n_step), ncols=70):
+      for self.t in range(n_step):
         # 1. predict
         action = self.predict(self.history.get(), test_ep)
         # 2. act
@@ -182,3 +191,8 @@ class Agent(object):
   def update_target_q_network(self):
     assert self.target_network != None
     self.target_network.run_copy()
+
+  def observe(self, observation, reward, action, terminal):
+      pass
+
+

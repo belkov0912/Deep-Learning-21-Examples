@@ -28,6 +28,7 @@ layers = [op.name for op in graph.get_operations() if op.type == 'Conv2D' and 'i
 
 # 输出卷积层层数
 print('Number of layers', len(layers))
+print("layer names: {}".format("\n".join(layers)))
 
 # 特别地，输出mixed4d_3x3_bottleneck_pre_relu的形状
 name = 'mixed4d_3x3_bottleneck_pre_relu'

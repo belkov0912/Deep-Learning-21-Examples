@@ -9,7 +9,8 @@ logger = getLogger(__name__)
 pp = pprint.PrettyPrinter().pprint
 
 def get_model_dir(config, exceptions=None):
-  attrs = config.__dict__['__flags']
+  # attrs = config.__dict__['__flags']
+  attrs = dict([(k, config[k].value) for k in config])
   pp(attrs)
 
   keys = list(attrs.keys())
@@ -20,7 +21,7 @@ def get_model_dir(config, exceptions=None):
   names = [config.env_name]
   for key in keys:
     # Only use useful flags
-    if key not in exceptions:
+    if key in exceptions:
       names.append("%s=%s" % (key, ",".join([str(i) for i in attrs[key]])
           if type(attrs[key]) == list else attrs[key]))
   return os.path.join('checkpoints', *names) + '/'

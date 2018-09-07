@@ -97,6 +97,43 @@ def read_cifar10(filename_queue):
 
   return result
 
+def read_and_decode(filename_queue):
+
+    class CIFAR10Record(object):
+        pass
+    result = CIFAR10Record()
+
+    # Dimensions of the images in the CIFAR-10 dataset.
+    # See http://www.cs.toronto.edu/~kriz/cifar.html for a description of the
+    # input format.
+    label_bytes = 1  # 2 for CIFAR-100
+    result.height = 32
+    result.width = 32
+    result.depth = 3
+
+    # 创建文件队列,不限读取的数量
+    # filename_queue = tf.train.string_input_producer([filename])
+    # create a reader from file queue
+    reader = tf.TFRecordReader()
+    # reader从文件队列中读入一个序列化的样本
+    _, serialized_example = reader.read(filename_queue)
+    # get feature from serialized example
+    # 解析符号化的样本
+    features = tf.parse_single_example(
+        serialized_example,
+        features={
+            'label': tf.FixedLenFeature([], tf.int64),
+            'img_raw': tf.FixedLenFeature([], tf.string)
+        })
+    label = features['label']
+    label = tf.cast(label, tf.int32)
+    result.label = tf.reshape(label, [1])
+    img = features['img_raw']
+    img = tf.decode_raw(img, tf.uint8)
+    img = tf.reshape(img, [result.height, result.width, result.depth])
+    # img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
+    result.uint8image = img
+    return result
 
 def _generate_image_and_label_batch(image, label, min_queue_examples,
                                     batch_size, shuffle):
@@ -137,7 +174,7 @@ def _generate_image_and_label_batch(image, label, min_queue_examples,
   return images, tf.reshape(label_batch, [batch_size])
 
 
-def distorted_inputs(data_dir, batch_size):
+def distorted_inputs(data_dir, batch_size, use_raw_img):
   """Construct distorted input for CIFAR training using the Reader ops.
 
   Args:
@@ -148,8 +185,7 @@ def distorted_inputs(data_dir, batch_size):
     images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
     labels: Labels. 1D tensor of [batch_size] size.
   """
-  filenames = [os.path.join(data_dir, 'data_batch_%d.bin' % i)
-               for i in xrange(1, 6)]
+  filenames = [os.path.join(data_dir, 'data_batch_%d.bin' % i) for i in xrange(1, 6)] if not use_raw_img else [os.path.join(data_dir, 'cifar10_train.tfrecords')]
   for f in filenames:
     if not tf.gfile.Exists(f):
       raise ValueError('Failed to find file: ' + f)
@@ -158,7 +194,8 @@ def distorted_inputs(data_dir, batch_size):
   filename_queue = tf.train.string_input_producer(filenames)
 
   # Read examples from files in the filename queue.
-  read_input = read_cifar10(filename_queue)
+  # read_input = read_cifar10(filename_queue)
+  read_input = read_and_decode(filename_queue)
   reshaped_image = tf.cast(read_input.uint8image, tf.float32)
 
   height = IMAGE_SIZE

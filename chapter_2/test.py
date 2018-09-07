@@ -11,7 +11,7 @@ with tf.Session() as sess:
     # 我们要读三幅图片A.jpg, B.jpg, C.jpg
     filename = ['A.jpg', 'B.jpg', 'C.jpg']
     # string_input_producer会产生一个文件名队列
-    filename_queue = tf.train.string_input_producer(filename, shuffle=False, num_epochs=5)
+    filename_queue = tf.train.string_input_producer(filename, shuffle=False, num_epochs=3)
     # reader从文件名队列中读数据。对应的方法是reader.read
     reader = tf.WholeFileReader()
     key, value = reader.read(filename_queue)
@@ -23,7 +23,12 @@ with tf.Session() as sess:
     while True:
         i += 1
         # 获取图片数据并保存
-        image_data = sess.run(value)
-        with open('read/test_%d.jpg' % i, 'wb') as f:
-            f.write(image_data)
+        try:
+            (k, image_data) = sess.run([key, value])
+            with open('read/test_%d.jpg' % i, 'wb') as f:
+                print("key:" + str(k) + " finished")
+                f.write(image_data)
+        except tf.errors.OutOfRangeError:
+            print("string input queue is over")
+            break
 # 程序最后会抛出一个OutOfRangeError，这是epoch跑完，队列关闭的标志

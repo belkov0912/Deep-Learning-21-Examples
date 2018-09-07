@@ -1,7 +1,7 @@
 from __future__ import print_function
 import numpy as np
 import time
-from env import Env
+from chapter_18.env import Env
 from reprint import output
 
 
@@ -25,7 +25,7 @@ e = Env()
 Q = np.zeros((e.state_num, 4))
 
 with output(output_type="list", initial_len=len(e.map), interval=0) as output_list:
-    for i in range(100):
+    for i in range(1):
         e = Env()
         while (e.is_end is False) and (e.step < MAX_STEP):
             action = epsilon_greedy(Q, e.present_state)

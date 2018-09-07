@@ -35,7 +35,7 @@ python main.py --network_header_type=nips --env_name=Breakout-v0 --use_gpu=True 
 
 测试在CPU上训练的模型：
 ```
-python main.py --network_header_type=nips --env_name=Breakout-v0 --use_gpu=True --is_train=True
+python main.py --network_header_type=nips --env_name=Breakout-v0 --use_gpu=False --is_train=False
 ```
 
 在上述命令中加入--display=True选项，可以实时显示游戏进程。

@@ -60,7 +60,7 @@ step 700, training accuracy 0.9
 step 800, training accuracy 0.91  
 step 900, training accuracy 0.88  
 
--tf.reduce_sum(y_ * tf.nn.softmax(y_conv)  
+-tf.reduce_sum(y_ * tf.log(tf.nn.softmax(y_conv))  
 step 0, training accuracy 0.08  
 step 100, training accuracy 0.52  
 step 200, training accuracy 0.62  

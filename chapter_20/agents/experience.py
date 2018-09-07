@@ -12,6 +12,7 @@ class Experience(object):
 
     self.actions = np.empty(self.memory_size, dtype=np.uint8)
     self.rewards = np.empty(self.memory_size, dtype=np.int8)
+    #100*10^4*80*80 * 1Byte = 6.4GB
     self.observations = np.empty([self.memory_size] + observation_dims, dtype=np.uint8)
     self.terminals = np.empty(self.memory_size, dtype=np.bool)
 

@@ -1,7 +1,7 @@
 from __future__ import print_function
 import numpy as np
 import time
-from env import Env
+from chapter_19.env import Env
 
 
 EPSILON = 0.1

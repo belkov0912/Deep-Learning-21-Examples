@@ -1,6 +1,6 @@
 #coding: utf-8
 # 导入当前目录的cifar10_input，这个模块负责读入cifar10数据
-from chapter_2 import cifar10_input
+import cifar10_input
 # 导入TensorFlow和其他一些可能用到的模块。
 import tensorflow as tf
 import os

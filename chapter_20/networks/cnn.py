@@ -1,6 +1,3 @@
-import os
-import tensorflow as tf
-
 from .layers import *
 from .network import Network
 
