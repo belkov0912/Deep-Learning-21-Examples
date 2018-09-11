@@ -198,8 +198,7 @@ def distorted_inputs(data_dir, batch_size, use_raw_img):
   filename_queue = tf.train.string_input_producer(filenames)
 
   # Read examples from files in the filename queue.
-  read_input = read_cifar10(filename_queue)
-  # read_input = read_and_decode(filename_queue)
+  read_input = read_and_decode(filename_queue) if use_raw_img else read_cifar10(filename_queue)
   reshaped_image = tf.cast(read_input.uint8image, tf.float32)
 
   height = IMAGE_SIZE
