@@ -58,8 +58,7 @@ tf.app.flags.DEFINE_integer('num_examples', 10000,
 tf.app.flags.DEFINE_boolean('run_once', False,
                          """Whether to run eval only once.""")
 
-
-def eval_once(saver, summary_writer, top_k_op, summary_op):
+def eval_once(saver, summary_writer, top_k_op, x, summary_op):
   """Run Eval once.
 
   Args:
@@ -94,7 +93,7 @@ def eval_once(saver, summary_writer, top_k_op, summary_op):
       total_sample_count = num_iter * FLAGS.batch_size
       step = 0
       while step < num_iter and not coord.should_stop():
-        predictions = sess.run([top_k_op])
+        predictions, px = sess.run([top_k_op, x])
         true_count += np.sum(predictions)
         step += 1
 
@@ -124,6 +123,8 @@ def evaluate():
     # inference model.
     logits = cifar10.inference(images)
 
+    logits1 = tf.argmax(logits, dimension=1)
+    x = tf.Print(logits, [logits1, logits1.shape, labels, labels.shape])
     # Calculate predictions.
     top_k_op = tf.nn.in_top_k(logits, labels, 1)
 
@@ -139,7 +140,7 @@ def evaluate():
     summary_writer = tf.summary.FileWriter(FLAGS.eval_dir, g)
 
     while True:
-      eval_once(saver, summary_writer, top_k_op, summary_op)
+      eval_once(saver, summary_writer, top_k_op, x, summary_op)
       if FLAGS.run_once:
         break
       time.sleep(FLAGS.eval_interval_secs)

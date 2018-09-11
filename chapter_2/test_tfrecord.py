@@ -6,7 +6,7 @@ import tensorflow as tf
 from PIL import Image
 
 # 原始图片的存储位置
-orig_picture = '/Users/jiananliu/work/machinelearn/dl/Deep-Learning-21-Examples/chapter_2/cifar10_data/cifar-10-raw-pic/cifar10/'
+orig_picture = '/Users/jiananliu/work/machinelearn/dl/Deep-Learning-21-Examples/chapter_2/cifar10_data/cifar-10-raw-pic/test//'
 
 # 生成图片的存储位置
 gen_picture = '/Users/jiananliu/work/machinelearn/dl/Deep-Learning-21-Examples/chapter_2/cifar10_data/cifar-10-raw-pic'
@@ -23,13 +23,15 @@ channel = 3
 
 # 制作TFRecords数据
 def create_record():
-    writer = tf.python_io.TFRecordWriter("cifar10_train.tfrecords")
+    writer = tf.python_io.TFRecordWriter("cifar10_test.tfrecords")
     for index, name in enumerate(classes):
         class_path = orig_picture + "/" + name + "/"
         for img_name in os.listdir(class_path):
             img_path = class_path + img_name
             img = Image.open(img_path)
+            print(img)
             img = img.resize((heigth, width))  # 设置需要转换的图片大小
+            print(img)
             img_raw = img.tobytes()  # 将图片转化为原生bytes
             print(index, img_raw)
             example = tf.train.Example(
@@ -59,6 +61,7 @@ def read_and_decode(filename):
         })
     label = features['label']
     img = features['img_raw']
+    print(img)
     img = tf.decode_raw(img, tf.uint8)
     img = tf.reshape(img, [heigth, width, channel])
     # img = tf.cast(img, tf.float32) * (1. / 255) - 0.5

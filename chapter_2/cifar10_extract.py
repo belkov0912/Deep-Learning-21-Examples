@@ -25,13 +25,13 @@ def inputs_origin(data_dir):
   reshaped_image = tf.cast(read_input.uint8image, tf.float32)
   # 返回的reshaped_image是一张图片的tensor
   # 我们应当这样理解reshaped_image：每次使用sess.run(reshaped_image)，就会取出一张图片
-  return reshaped_image
+  return reshaped_image, read_input.label
 
 if __name__ == '__main__':
   # 创建一个会话sess
   with tf.Session() as sess:
     # 调用inputs_origin。cifar10_data/cifar-10-batches-bin是我们下载的数据的文件夹位置
-    reshaped_image = inputs_origin('cifar10_data/cifar-10-batches-bin')
+    reshaped_image, label = inputs_origin('cifar10_data/cifar-10-batches-bin')
     # 这一步start_queue_runner很重要。
     # 我们之前有filename_queue = tf.train.string_input_producer(filenames)
     # 这个queue必须通过start_queue_runners才能启动
@@ -45,6 +45,6 @@ if __name__ == '__main__':
     # 保存30张图片
     for i in range(30):
       # 每次sess.run(reshaped_image)，都会取出一张图片
-      image_array = sess.run(reshaped_image)
+      image_array, l = sess.run([reshaped_image, label])
       # 将图片保存
-      scipy.misc.toimage(image_array).save('cifar10_data/raw/%d.jpg' % i)
+      scipy.misc.toimage(image_array).save('cifar10_data/raw/%d_%d.jpg' % (i, l))

@@ -130,8 +130,12 @@ def read_and_decode(filename_queue):
     result.label = tf.reshape(label, [1])
     img = features['img_raw']
     img = tf.decode_raw(img, tf.uint8)
+
     img = tf.reshape(img, [result.height, result.width, result.depth])
-    # img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
+    # img = tf.reshape(img, [result.depth, result.height, result.width])
+    # # Convert from [depth, height, width] to [height, width, depth].
+    # img = tf.transpose(img, [1, 2, 0])
+    img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
     result.uint8image = img
     return result
 
@@ -194,8 +198,8 @@ def distorted_inputs(data_dir, batch_size, use_raw_img):
   filename_queue = tf.train.string_input_producer(filenames)
 
   # Read examples from files in the filename queue.
-  # read_input = read_cifar10(filename_queue)
-  read_input = read_and_decode(filename_queue)
+  read_input = read_cifar10(filename_queue)
+  # read_input = read_and_decode(filename_queue)
   reshaped_image = tf.cast(read_input.uint8image, tf.float32)
 
   height = IMAGE_SIZE
@@ -237,7 +241,7 @@ def distorted_inputs(data_dir, batch_size, use_raw_img):
                                          shuffle=True)
 
 
-def inputs(eval_data, data_dir, batch_size):
+def inputs(eval_data, data_dir, batch_size, use_raw_img):
   """Construct input for CIFAR evaluation using the Reader ops.
 
   Args:
@@ -254,7 +258,7 @@ def inputs(eval_data, data_dir, batch_size):
                  for i in xrange(1, 6)]
     num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
   else:
-    filenames = [os.path.join(data_dir, 'test_batch.bin')]
+    filenames = [os.path.join(data_dir, 'test_batch.bin') for i in xrange(1, 6)] if not use_raw_img else [os.path.join(data_dir, 'cifar10_train.tfrecords')]
     num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
 
   for f in filenames:
@@ -265,7 +269,7 @@ def inputs(eval_data, data_dir, batch_size):
   filename_queue = tf.train.string_input_producer(filenames)
 
   # Read examples from files in the filename queue.
-  read_input = read_cifar10(filename_queue)
+  read_input = read_and_decode(filename_queue) if use_raw_img else read_cifar10(filename_queue)
   reshaped_image = tf.cast(read_input.uint8image, tf.float32)
 
   height = IMAGE_SIZE
