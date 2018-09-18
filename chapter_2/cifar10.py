@@ -155,6 +155,7 @@ def distorted_inputs():
     raise ValueError('Please supply a data_dir')
   default_data_dir = 'cifar-10-raw-pic' if FLAGS.use_raw_img else 'cifar-10-batches-bin'
   data_dir = os.path.join(FLAGS.data_dir, default_data_dir)
+  print("read data_dir:" + data_dir)
   images, labels = cifar10_input.distorted_inputs(data_dir=data_dir,
                                                   batch_size=FLAGS.batch_size,
                                                   use_raw_img=FLAGS.use_raw_img)
@@ -181,6 +182,7 @@ def inputs(eval_data):
     raise ValueError('Please supply a data_dir')
   default_data_dir = 'cifar-10-raw-pic' if FLAGS.use_raw_img else 'cifar-10-batches-bin'
   data_dir = os.path.join(FLAGS.data_dir, default_data_dir)
+  print("read data_dir: " + data_dir)
   images, labels = cifar10_input.inputs(eval_data=eval_data,
                                         data_dir=data_dir,
                                         batch_size=FLAGS.batch_size,

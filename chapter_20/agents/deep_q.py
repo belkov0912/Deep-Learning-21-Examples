@@ -1,5 +1,3 @@
-import os
-import time
 import numpy as np
 import tensorflow as tf
 from logging import getLogger

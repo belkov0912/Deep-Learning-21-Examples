@@ -83,8 +83,8 @@ def read_cifar10(filename_queue):
   record_bytes = tf.decode_raw(value, tf.uint8)
 
   # The first bytes represent the label, which we convert from uint8->int32.
-  result.label = tf.cast(
-      tf.strided_slice(record_bytes, [0], [label_bytes]), tf.int32)
+  aa = tf.strided_slice(record_bytes, [0], [label_bytes])
+  result.label = tf.cast(aa, tf.int32)
 
   # The remaining bytes after the label represent the image, which we reshape
   # from [depth * height * width] to [depth, height, width].
@@ -135,7 +135,7 @@ def read_and_decode(filename_queue):
     # img = tf.reshape(img, [result.depth, result.height, result.width])
     # # Convert from [depth, height, width] to [height, width, depth].
     # img = tf.transpose(img, [1, 2, 0])
-    img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
+    # img = tf.cast(img, tf.float32) * (1. / 255) - 0.5
     result.uint8image = img
     return result
 
@@ -190,6 +190,7 @@ def distorted_inputs(data_dir, batch_size, use_raw_img):
     labels: Labels. 1D tensor of [batch_size] size.
   """
   filenames = [os.path.join(data_dir, 'data_batch_%d.bin' % i) for i in xrange(1, 6)] if not use_raw_img else [os.path.join(data_dir, 'cifar10_train.tfrecords')]
+  print("train filenames are:" + str(filenames))
   for f in filenames:
     if not tf.gfile.Exists(f):
       raise ValueError('Failed to find file: ' + f)
@@ -260,6 +261,7 @@ def inputs(eval_data, data_dir, batch_size, use_raw_img):
     filenames = [os.path.join(data_dir, 'test_batch.bin') for i in xrange(1, 6)] if not use_raw_img else [os.path.join(data_dir, 'cifar10_train.tfrecords')]
     num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
 
+  print("eval filenames: " + str(filenames))
   for f in filenames:
     if not tf.gfile.Exists(f):
       raise ValueError('Failed to find file: ' + f)

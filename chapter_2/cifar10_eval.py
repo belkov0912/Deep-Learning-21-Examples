@@ -124,7 +124,7 @@ def evaluate():
     logits = cifar10.inference(images)
 
     logits1 = tf.argmax(logits, dimension=1)
-    x = tf.Print(logits, [logits1, logits1.shape, labels, labels.shape])
+    x = tf.Print(logits, [logits1, logits1.shape, labels, labels.shape], summarize=5)
     # Calculate predictions.
     top_k_op = tf.nn.in_top_k(logits, labels, 1)
 
@@ -143,11 +143,11 @@ def evaluate():
       eval_once(saver, summary_writer, top_k_op, x, summary_op)
       if FLAGS.run_once:
         break
-      time.sleep(FLAGS.eval_interval_secs)
+      # time.sleep(FLAGS.eval_interval_secs)
 
 
 def main(argv=None):  # pylint: disable=unused-argument
-  cifar10.maybe_download_and_extract()
+  #cifar10.maybe_download_and_extract()
   if tf.gfile.Exists(FLAGS.eval_dir):
     tf.gfile.DeleteRecursively(FLAGS.eval_dir)
   tf.gfile.MakeDirs(FLAGS.eval_dir)
