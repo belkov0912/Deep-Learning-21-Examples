@@ -27,10 +27,12 @@ import tensorflow as tf
 # Process images of this size. Note that this differs from the original CIFAR
 # image size of 32 x 32. If one alters this number, then the entire model
 # architecture will change and any model would need to be retrained.
-IMAGE_SIZE = 24
+
+RAW_IMAGE_SIZE = 128
+IMAGE_SIZE = int(RAW_IMAGE_SIZE * 0.75)
 
 # Global constants describing the CIFAR-10 data set.
-NUM_CLASSES = 10
+NUM_CLASSES = 8
 NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN = 50000
 NUM_EXAMPLES_PER_EPOCH_FOR_EVAL = 10000
 
@@ -107,8 +109,8 @@ def read_and_decode(filename_queue):
     # See http://www.cs.toronto.edu/~kriz/cifar.html for a description of the
     # input format.
     label_bytes = 1  # 2 for CIFAR-100
-    result.height = 32
-    result.width = 32
+    result.height = RAW_IMAGE_SIZE
+    result.width = RAW_IMAGE_SIZE
     result.depth = 3
 
     # 创建文件队列,不限读取的数量
@@ -189,7 +191,7 @@ def distorted_inputs(data_dir, batch_size, use_raw_img):
     images: Images. 4D tensor of [batch_size, IMAGE_SIZE, IMAGE_SIZE, 3] size.
     labels: Labels. 1D tensor of [batch_size] size.
   """
-  filenames = [os.path.join(data_dir, 'data_batch_%d.bin' % i) for i in xrange(1, 6)] if not use_raw_img else [os.path.join(data_dir, 'cifar10_train.tfrecords')]
+  filenames = [os.path.join(data_dir, 'data_batch_%d.bin' % i) for i in xrange(1, 6)] if not use_raw_img else [os.path.join(data_dir, '58fang_train_%d.tfrecords' % i) for i in xrange(0, 5)]
   print("train filenames are:" + str(filenames))
   for f in filenames:
     if not tf.gfile.Exists(f):
@@ -258,7 +260,7 @@ def inputs(eval_data, data_dir, batch_size, use_raw_img):
                  for i in xrange(1, 6)]
     num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_TRAIN
   else:
-    filenames = [os.path.join(data_dir, 'test_batch.bin') for i in xrange(1, 6)] if not use_raw_img else [os.path.join(data_dir, 'cifar10_train.tfrecords')]
+    filenames = [os.path.join(data_dir, 'test_batch.bin') for i in xrange(1, 6)] if not use_raw_img else [os.path.join(data_dir, '58fang_train_test.tfrecords')]
     num_examples_per_epoch = NUM_EXAMPLES_PER_EPOCH_FOR_EVAL
 
   print("eval filenames: " + str(filenames))
@@ -296,4 +298,4 @@ def inputs(eval_data, data_dir, batch_size, use_raw_img):
   # Generate a batch of images and labels by building up a queue of examples.
   return _generate_image_and_label_batch(float_image, read_input.label,
                                          min_queue_examples, batch_size,
-                                         shuffle=False)
+                                         shuffle=True)

@@ -7,8 +7,8 @@ from PIL import Image
 
 # 原始图片的存储位置
 
-orig_picture = '/Users/jiananliu/work/machinelearn/dl/Deep-Learning-21-Examples/chapter_2/cifar10_data/cifar-10-raw-pic/cifar10/'
-file_name = "cifar10_train.tfrecords"
+orig_picture = '/Users/jiananliu/work/machinelearn/dl/Deep-Learning-21-Examples/book_data/chapter_2/58fang_data/'
+file_name = "58fang_train_%d.tfrecords"
 
 # orig_picture = '/Users/jiananliu/work/machinelearn/dl/Deep-Learning-21-Examples/book_data/chapter_2'
 
@@ -16,13 +16,13 @@ file_name = "cifar10_train.tfrecords"
 gen_picture = '/Users/jiananliu/work/machinelearn/dl/Deep-Learning-21-Examples/chapter_2/cifar10_data/cifar-10-raw-pic'
 
 # 需要的识别类型
-classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
-# classes = ['balcony',  'bathroom',  'bedroom',  'bookroom',  'cloakroom',  'dining',  'kitchen',  'living']
+# classes = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+classes = ['balcony',  'bathroom',  'bedroom',  'bookroom',  'cloakroom',  'dining',  'kitchen',  'living']
 
 # 样本总数
 num_samples = 120
-heigth = 32
-width = 32
+heigth = 128
+width = 128
 channel = 3
 
 # 制作TFRecords数据
@@ -121,9 +121,39 @@ def read_and_decode(filename):
     result.uint8image = img
     return result.uint8image, result.label
 
+def create_record_shuffle():
+    writers = [tf.python_io.TFRecordWriter(file_name % i) for i in range(6)]
+    for index, name in enumerate(classes):
+        class_path = orig_picture + "/" + name + "/"
+        num = 1000000
+        i = 0
+        for img_name in os.listdir(class_path):
+            img_path = class_path + img_name
+            img2 = Image.open(img_path)
+            img = img2.resize((heigth, width))  # 设置需要转换的图片大小
+            img_raw = img.tobytes()  # 将图片转化为原生bytes
+            l = len(img_raw)
+            if l != heigth * width * channel:
+                continue
+            print(index, l)
+            example = tf.train.Example(
+                features=tf.train.Features(feature={
+                    "label": tf.train.Feature(int64_list=tf.train.Int64List(value=[index])),
+                    'img_raw': tf.train.Feature(bytes_list=tf.train.BytesList(value=[img_raw]))
+                }))
+            import random
+            r = random.randrange(6)
+            writers[r].write(example.SerializeToString())
+            if i >= num:
+                break
+            i += 1
+    for i in range(6):
+        writers[i].close()
+
+
 # =======================================================================================
 if __name__ == '__main__':
-    create_record()
+    create_record_shuffle()
 #     batch = read_and_decode(file_name)
 #     init_op = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())
 #
