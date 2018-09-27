@@ -43,6 +43,9 @@ import tarfile
 from six.moves import urllib
 import tensorflow as tf
 
+from tensorflow.contrib.layers.python.layers import initializers
+from functools import reduce
+
 import cifar10_input
 
 FLAGS = tf.app.flags.FLAGS
@@ -278,6 +281,97 @@ def inference(images):
 
   return softmax_linear
 
+def conv2d(x,
+           output_dim,
+           kernel_size,
+           stride,
+           weights_initializer=tf.contrib.layers.xavier_initializer(),
+           biases_initializer=tf.zeros_initializer,
+           activation_fn=tf.nn.relu,
+           data_format='NHWC',
+           padding='VALID',
+           name='conv2d',
+           trainable=True):
+    with tf.variable_scope(name):
+        if data_format == 'NCHW':
+            stride = [1, 1, stride[0], stride[1]]
+            kernel_shape = [kernel_size[0], kernel_size[1], x.get_shape()[1], output_dim]
+        else: #if data_format == 'NHWC':
+            stride = [1, stride[0], stride[1], 1]
+            kernel_shape = [kernel_size[0], kernel_size[1], x.get_shape()[-1], output_dim]
+
+        w = tf.get_variable('w', kernel_shape,
+                            tf.float32, initializer=weights_initializer, trainable=trainable)
+        conv = tf.nn.conv2d(x, w, stride, padding, data_format=data_format)
+
+        b = tf.get_variable('b', [output_dim],
+                            tf.float32, initializer=biases_initializer, trainable=trainable)
+        out = tf.nn.bias_add(conv, b, data_format)
+
+    if activation_fn != None:
+        out = activation_fn(out)
+
+    return out, w, b
+
+def linear(input_,
+           output_size,
+           weights_initializer=initializers.xavier_initializer(),
+           biases_initializer=tf.zeros_initializer,
+           activation_fn=None,
+           trainable=True,
+           name='linear'):
+    shape = input_.get_shape().as_list()
+
+    if len(shape) > 2:
+        input_ = tf.reshape(input_, [-1, reduce(lambda x, y: x * y, shape[1:])])
+        shape = input_.get_shape().as_list()
+
+    with tf.variable_scope(name):
+        w = tf.get_variable('w', [shape[1], output_size], tf.float32,
+                            initializer=weights_initializer, trainable=trainable)
+        b = tf.get_variable('b', [output_size],
+                            initializer=biases_initializer, trainable=trainable)
+        out = tf.nn.bias_add(tf.matmul(input_, w), b)
+
+        if activation_fn != None:
+            return activation_fn(out), w, b
+        else:
+            return out, w, b
+
+def layer(i, x, out_dim, kernel_size, stride, padding, pooling_ratio, keep_prob):
+    prefix = 'layer' + str(i) + '_'
+    conv, _, _ = conv2d(x, output_dim=out_dim, kernel_size=kernel_size, stride=stride, padding=padding, name=prefix+'conv')
+    _activation_summary(conv)
+    pool, _, _ = tf.nn.fractional_max_pool(conv, pooling_ratio, pseudo_random=True, overlapping=True, name=prefix+'fmp1')
+    if keep_prob < 1.0:
+        pool = tf.nn.dropout(pool, keep_prob, name=prefix+'dropout')
+    return pool
+
+def inference2(images):
+    input = output = images
+    for i in range(6):
+        kernel_size = 160 * (i + 1)
+        pooling_ratio = [1, 1.4, 1.4, 1]
+        keep_prob = 1 - 0.1 * (i + 1)
+        output = layer(i, input, kernel_size, [5, 5], [1, 1], 'SAME', pooling_ratio, keep_prob)
+        input = output
+
+    out, w, b = linear(output, 192, activation_fn=tf.nn.relu)
+    _activation_summary(out)
+
+    # linear layer(WX + b),
+    # We don't apply softmax here because
+    # tf.nn.sparse_softmax_cross_entropy_with_logits accepts the unscaled logits
+    # and performs the softmax internally for efficiency.
+    with tf.variable_scope('softmax_linear') as scope:
+        weights = _variable_with_weight_decay('weights', [192, NUM_CLASSES],
+                                              stddev=1/192.0, wd=0.0)
+        biases = _variable_on_cpu('biases', [NUM_CLASSES],
+                                  tf.constant_initializer(0.0))
+        softmax_linear = tf.add(tf.matmul(out, weights), biases, name=scope.name)
+        _activation_summary(softmax_linear)
+
+    return softmax_linear
 
 def loss(logits, labels):
   """Add L2Loss to all the trainable variables.

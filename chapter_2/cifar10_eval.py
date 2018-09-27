@@ -121,7 +121,7 @@ def evaluate():
 
     # Build a Graph that computes the logits predictions from the
     # inference model.
-    logits = cifar10.inference(images)
+    logits = cifar10.inference2(images)
 
     logits1 = tf.argmax(logits, dimension=1)
     x = tf.Print(logits, [logits1, logits1.shape, labels, labels.shape], summarize=5)

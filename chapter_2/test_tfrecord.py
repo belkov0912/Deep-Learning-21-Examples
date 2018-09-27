@@ -4,6 +4,7 @@
 import os
 import tensorflow as tf
 from PIL import Image
+import random
 
 # 原始图片的存储位置
 
@@ -123,30 +124,48 @@ def read_and_decode(filename):
 
 def create_record_shuffle():
     writers = [tf.python_io.TFRecordWriter(file_name % i) for i in range(6)]
-    for index, name in enumerate(classes):
+    index_map = {}
+    for index in range(len(classes)):
+        index_map.setdefault(index, 0)
+    class_num = len(classes)
+
+    total_num = 20000
+    i = 0
+    writer_index = 0
+    while True:
+        index = random.randrange(class_num)
+        img_index = index_map[index]
+
+        name = classes[index]
         class_path = orig_picture + "/" + name + "/"
-        num = 1000000
-        i = 0
-        for img_name in os.listdir(class_path):
-            img_path = class_path + img_name
+        img_name = str(img_index) + ".jpg"
+        img_path = class_path + img_name
+
+        index_map[index] += 1
+        if (not os.path.exists(img_path)):
+            continue
+        else:
+            i += 1
             img2 = Image.open(img_path)
             img = img2.resize((heigth, width))  # 设置需要转换的图片大小
             img_raw = img.tobytes()  # 将图片转化为原生bytes
             l = len(img_raw)
             if l != heigth * width * channel:
                 continue
-            print(index, l)
+            print(index, l, i)
             example = tf.train.Example(
                 features=tf.train.Features(feature={
                     "label": tf.train.Feature(int64_list=tf.train.Int64List(value=[index])),
                     'img_raw': tf.train.Feature(bytes_list=tf.train.BytesList(value=[img_raw]))
                 }))
-            import random
-            r = random.randrange(6)
-            writers[r].write(example.SerializeToString())
-            if i >= num:
-                break
-            i += 1
+            writers[writer_index].write(example.SerializeToString())
+            if i >= total_num:
+                i = 0
+                writer_index += 1
+
+        if writer_index >= len(writers):
+            break
+
     for i in range(6):
         writers[i].close()
 
